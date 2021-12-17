@@ -13,7 +13,7 @@ services:
        - --entrypoints.http.http.redirections.entryPoint.scheme=https
        - --entrypoints.https.address=:443
        - --entrypoints.https.http.tls.certResolver=letsencrypt
-       - --certificatesresolvers.letsencrypt.acme.email=postmaster@johnston.host
+       - --certificatesresolvers.letsencrypt.acme.email=postmaster@example.com
        - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
        - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http
     volumes:
@@ -23,30 +23,26 @@ services:
   whoami:
     image: docker.io/traefik/whoami:latest
     labels:
-       - "traefik.http.routers.whoami.rule=Host(`mail.johnston.host`)"
+       - "traefik.http.routers.whoami.rule=Host(`mail.example.com`)"
 
-  autodiscover-johnston-host:
+  autodiscover:
     image: monogramm/autodiscover-email-settings:latest
     container_name: autodiscover
     environment:
-      - COMPANY_NAME=johnston.host
-      - SUPPORT_URL=https://autodiscover.johnston.host
-      - DOMAIN=johnston.host
+      - COMPANY_NAME=example.com
+      - SUPPORT_URL=https://autodiscover.example.com
+      - DOMAIN=example.com
       # IMAP configuration (host mandatory to enable)
-      - IMAP_HOST=mail.johnston.host
+      - IMAP_HOST=mail.example.com
       - IMAP_PORT=143
       - IMAP_SOCKET=STARTTLS
-      # POP configuration (host mandatory to enable)
-      #- POP_HOST=pop3.johnston.host
-      #- POP_PORT=995
-      #- POP_SOCKET=SSL
       # SMTP configuration (host mandatory to enable)
-      - SMTP_HOST=mail.johnston.host
+      - SMTP_HOST=mail.example.com
       - SMTP_PORT=587
       - SMTP_SOCKET=STARTTLS
       # MobileSync/ActiveSync configuration (url mandatory to enable)
-      - MOBILESYNC_URL=https://sync.johnston.host
-      - MOBILESYNC_NAME=sync.johnston.host
+      - MOBILESYNC_URL=https://sync.example.com
+      - MOBILESYNC_NAME=sync.example.com
       # LDAP configuration (host mandatory to enable)
       #- LDAP_HOST=ldap.johnston.host
       #- LDAP_PORT=636
@@ -56,12 +52,12 @@ services:
       #- LDAP_USER_BASE=ou=People,dc=ldap,dc=johnston,dc=host
       #- LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))
       # Apple mobile config identifiers (identifier mandatory to enable)
-      - PROFILE_IDENTIFIER=host.johnston.autodiscover
+      - PROFILE_IDENTIFIER=com.example.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
       - MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC
       #- LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E
     labels:
-      - "traefik.http.routers.autodiscover-johnston-host.rule=Host(`autoconfig.johnston.host`) || Host(`autodiscover.johnston.host`) || Host(`sync.johnston.host`)"
+      - "traefik.http.routers.autodiscover.rule=Host(`autoconfig.example.com`) || Host(`autodiscover.example.com`) || Host(`sync.example.com`)"
 
   mailserver:
     image: docker.io/mailserver/docker-mailserver:latest
@@ -69,7 +65,7 @@ services:
     # If the FQDN for your mail-server is only two labels (eg: example.com),
     # you can assign this entirely to `hostname` and remove `domainname`.
     hostname: mail
-    domainname: johnston.host
+    domainname: example.com
     environment:
     # https://github.com/docker-mailserver/docker-mailserver/blob/v10.3.0/docs/content/config/environment.md
       - ENABLE_AMAVIS=0
