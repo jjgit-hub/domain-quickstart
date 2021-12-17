@@ -11,8 +11,8 @@ openssl ecparam -name prime256v1 -genkey | openssl pkey -out ./docker-data/dms/c
 openssl pkey -in ecprivkey.pem -pubout -out ./docker-data/dms/certs/ecpubkey.pem
 
 # setup mailserver
-docker-compose run mailserver setup email add it-admin@johnston.host
+docker-compose run mailserver setup email add it-admin@example.com
 docker-compose run mailserver setup email list
-docker-compose run mailserver setup alias add postmaster@johnston.host it-admin
+docker-compose run mailserver setup alias add postmaster@example.com it-admin
 docker-compose run mailserver setup alias list
 docker-compose run mailserver setup config dkim
