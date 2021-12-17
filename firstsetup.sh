@@ -8,7 +8,7 @@ sudo chmod 600 ./docker-data/traefik/acme.json
 sudo mkdir -p ./docker-data/dms/certs/
 sudo openssl ecparam -list_curves
 sudo openssl ecparam -name prime256v1 -genkey | sudo openssl pkey -out ./docker-data/dms/certs/ecprivkey.pem
-sudo openssl pkey -in ecprivkey.pem -pubout -out ./docker-data/dms/certs/ecpubkey.pem
+sudo openssl pkey -in ./docker-data/dms/certs/ecprivkey.pem -pubout -out ./docker-data/dms/certs/ecpubkey.pem
 
 # setup mailserver
 echo "creating it-admin@example.com"
