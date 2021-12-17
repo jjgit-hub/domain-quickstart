@@ -70,7 +70,11 @@ services:
     # you can assign this entirely to `hostname` and remove `domainname`.
     hostname: mail
     domainname: johnston.host
-    env_file: mailserver.env
+    environment:
+    # https://github.com/docker-mailserver/docker-mailserver/blob/v10.3.0/docs/content/config/environment.md
+      - ENABLE_AMAVIS=0
+      - SSL_TYPE=letsencrypt
+      - POSTFIX_INET_PROTOCOLS=ipv4
     # More information about the mail-server ports:
     # https://docker-mailserver.github.io/docker-mailserver/edge/config/security/understanding-the-ports/
     # To avoid conflicts with yaml base-60 float, DO NOT remove the quotation marks.
