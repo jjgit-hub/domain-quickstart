@@ -16,3 +16,7 @@ docker-compose run mailserver setup email list
 docker-compose run mailserver setup alias add postmaster@johnston.host it-admin
 docker-compose run mailserver setup alias list
 docker-compose run mailserver setup config dkim
+
+docker-compose up -d
+sudo cat ./docker-data/dms/config/opendkim/keys/johnston.host/mail.txt
+docker-compose run mailserver setup debug show-mail-logs
