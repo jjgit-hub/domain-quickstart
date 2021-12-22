@@ -1,50 +1,57 @@
 version: '3.8'
 services:
-  reverse-proxy:
-    image: docker.io/traefik:latest #v2.5
-    container_name: docker-traefik
-    ports:
-       - "80:80"
-       - "443:443"
+  traefik:
+    image: "traefik:latest"
+    container_name: "traefik"
     command:
-       - --providers.docker
-       - --entrypoints.http.address=:80
-       - --entrypoints.http.http.redirections.entryPoint.to=https
-       - --entrypoints.http.http.redirections.entryPoint.scheme=https
-       - --entrypoints.https.address=:443
-       - --entrypoints.https.http.tls.certResolver=letsencrypt
-       - --certificatesresolvers.letsencrypt.acme.email=postmaster@example.com
-       - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
-       - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http
+      #- "--log.level=DEBUG"
+      #- "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=postmaster@johnston.host"
+      - "--certificatesresolvers.myresolver.acme.storage=/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      #- "8080:8080"
     volumes:
-       - ./docker-data/traefik/acme.json:/acme.json
-       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "./docker-data/traefik/acme.json:/acme.json"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   whoami:
-    image: docker.io/traefik/whoami:latest
+    image: "traefik/whoami"
+    container_name: "whoami"
     labels:
-       - "traefik.http.routers.whoami.rule=Host(`mail.example.com`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`johnston.host`) || Host(`mail.johnston.host`) || Host(`www.johnston.host`)"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls.certresolver=myresolver"
 
   autodiscover:
     image: monogramm/autodiscover-email-settings:latest
     container_name: autodiscover
     environment:
-      - COMPANY_NAME=example.com
-      - SUPPORT_URL=https://autodiscover.example.com
-      - DOMAIN=example.com
+      - COMPANY_NAME=johnston.host
+      - SUPPORT_URL=https://autodiscover.johnston.host
+      - DOMAIN=johnston.host
       # IMAP configuration (host mandatory to enable)
-      - IMAP_HOST=mail.example.com
+      - IMAP_HOST=mail.johnston.host
       - IMAP_PORT=143
       - IMAP_SOCKET=STARTTLS
       # SMTP configuration (host mandatory to enable)
-      - SMTP_HOST=mail.example.com
+      - SMTP_HOST=mail.johnston.host
       - SMTP_PORT=587
       - SMTP_SOCKET=STARTTLS
       # MobileSync/ActiveSync configuration (url mandatory to enable)
-      - MOBILESYNC_URL=https://sync.example.com
-      - MOBILESYNC_NAME=sync.example.com
+      - MOBILESYNC_URL=https://sync.johnston.host
+      - MOBILESYNC_NAME=sync.johnston.host
       # LDAP configuration (host mandatory to enable)
-      #- LDAP_HOST=ldap.example.com
+      #- LDAP_HOST=ldap.johnston.host
       #- LDAP_PORT=636
       #- LDAP_SOCKET=SSL
       #- LDAP_BASE=dc=ldap,dc=example,dc=com
@@ -52,20 +59,24 @@ services:
       #- LDAP_USER_BASE=ou=People,dc=ldap,dc=example,dc=com
       #- LDAP_SEARCH=(|(objectClass=PostfixBookMailAccount))
       # Apple mobile config identifiers (identifier mandatory to enable)
-      - PROFILE_IDENTIFIER=com.example.autodiscover
+      - PROFILE_IDENTIFIER=host.johnston.autodiscover
       - PROFILE_UUID=92943D26-CAB3-4086-897D-DC6C0D8B1E86
       - MAIL_UUID=7A981A9E-D5D0-4EF8-87FE-39FD6A506FAC
       #- LDAP_UUID=6ECB6BA9-2208-4ABF-9E60-4E9F4CD7309E
     labels:
-      - "traefik.http.routers.autodiscover.rule=Host(`autoconfig.example.com`) || Host(`autodiscover.example.com`) || Host(`sync.example.com`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.autodiscover.rule=Host(`autoconfig.johnston.host`) || Host(`autodiscover.johnston.host`) || Host(`sync.johnston.host`)"
+      - "traefik.http.routers.autodiscover.entrypoints=websecure"
+      - "traefik.http.routers.autodiscover.tls.certresolver=myresolver"
+
 
   mailserver:
     image: docker.io/mailserver/docker-mailserver:latest
     container_name: mailserver
-    # If the FQDN for your mail-server is only two labels (eg: example.com),
+    # If the FQDN for your mail-server is only two labels (eg: johnston.host),
     # you can assign this entirely to `hostname` and remove `domainname`.
     hostname: mail
-    domainname: example.com
+    domainname: johnston.host
     environment:
     # https://github.com/docker-mailserver/docker-mailserver/blob/v10.3.0/docs/content/config/environment.md
       - ENABLE_AMAVIS=0
@@ -93,3 +104,5 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_PTRACE
+    labels:
+      - "traefik.enable=false"
