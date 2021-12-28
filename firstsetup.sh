@@ -19,4 +19,8 @@ docker-compose run mailserver setup config dkim
 
 docker-compose up -d
 sudo cat ./docker-data/dms/config/opendkim/keys/johnston.host/mail.txt
+<<<<<<< HEAD
 docker-compose logs -f
+=======
+docker-compose run mailserver setup debug show-mail-logs
+>>>>>>> 31b4c1f56ac0d0b0e58e8fc6a90c6d51850e4a9d
