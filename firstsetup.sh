@@ -13,6 +13,10 @@ sudo openssl pkey -in ./docker-data/dms/certs/ecprivkey.pem -pubout -out ./docke
 echo "creating it-admin@johnston.host"
 docker-compose run mailserver setup email add it-admin@johnston.host
 docker-compose run mailserver setup email list
-docker-compose run mailserver setup alias add postmaster@johnston.host it-admin
+docker-compose run mailserver setup alias add postmaster@johnston.host it-admin@johnston.host
 docker-compose run mailserver setup alias list
 docker-compose run mailserver setup config dkim
+
+docker-compose up -d
+sudo cat ./docker-data/dms/config/opendkim/keys/johnston.host/mail.txt
+docker-compose logs -f
