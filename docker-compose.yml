@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.9"
 services:
   traefik:
     image: "traefik:latest"
@@ -19,7 +19,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - "./docker-data/traefik/acme.json:/acme.json"
+      - acme-volume:/acme.json
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -40,8 +40,8 @@ services:
     image: "nginx:alpine"
     container_name: "nginx"
     volumes:
-      - "./docker-data/nginx/website:/usr/share/nginx/html:ro"
-      - "./docker-data/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - website-volume:/usr/share/nginx/html:ro
+      - ngnix-config-volume:/etc/nginx/nginx.conf:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nginx.entrypoints=websecure"
@@ -98,7 +98,7 @@ services:
     domainname: "johnston.host"
     environment:
     # https://github.com/docker-mailserver/docker-mailserver/blob/v10.3.0/docs/content/config/environment.md
-      - ENABLE_AMAVIS=0
+      - ENABLE_AMAVIS=1
       - SSL_TYPE=letsencrypt
       - POSTFIX_INET_PROTOCOLS=ipv4
     # More information about the mail-server ports:
@@ -111,13 +111,13 @@ services:
       - "587:587"  # ESMTP (explicit TLS => STARTTLS)
       - "993:993"  # IMAP4 (implicit TLS)
     volumes:
-      - "./docker-data/dms/mail-data/:/var/mail/"
-      - "./docker-data/dms/mail-state/:/var/mail-state/"
-      - "./docker-data/dms/mail-logs/:/var/log/mail/"
-      - "./docker-data/dms/config/:/tmp/docker-mailserver/"
-      - "./docker-data/traefik/acme.json:/etc/letsencrypt/acme.json:ro"
-      - "./docker-data/dms/config/dovecot/10-custom.conf:/etc/dovecot/conf.d/10-custom.conf"
-      - "./docker-data/dms/certs/:/certs"
+      - dms-mail-data-volume:/var/mail/
+      - dms-mail-state-volume:/var/mail-state/
+      - dms-mail-logs-volume:/var/log/mail/
+      - dms-config-volume:/tmp/docker-mailserver/
+      - acme-volume:/etc/letsencrypt/acme.json:ro
+      - dms-config-custom-volume:/etc/dovecot/conf.d/10-custom.conf
+      - dms-certs-volume:/certs
     restart: always
     stop_grace_period: 1m
     cap_add:
@@ -139,3 +139,17 @@ services:
       - WATCHTOWER_INCLUDE_RESTARTING=true
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+
+volumes:
+  acme-volume:
+  website-volume:
+    external: true
+  ngnix-config-volume:
+    external: true
+  dms-mail-data-volume:
+  dms-mail-state-volume:
+  dms-mail-logs-volume:
+  dms-config-volume:
+  dms-certs-volume:
+  dms-config-custom-volume:
+    external: true
